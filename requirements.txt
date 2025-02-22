@@ -1,0 +1,8 @@
+langchain-google-genai
+langchain-openai
+langchain-core
+together
+dotenv
+elevenlabs
+pydantic
+requests
