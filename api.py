@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 from typing import Optional
 
 # Import your modules
-from tts import play_story_from_json
+from tts import get_audio_base64_from_story
 from imageGen import generate_and_save_image
 from brainStorming import get_brainstorming_ideas
 from chapter import generate_story_chapter
@@ -11,6 +11,39 @@ from character import generate_character_profile
 from outline import generate_plot_outline
 from quick_edit import perform_quick_edit
 from rewrite import get_rewritten_text
+
+from fastapi import FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
+from typing import Optional
+
+# Import your modules
+from tts import get_audio_base64_from_story
+from imageGen import generate_and_save_image
+from brainStorming import get_brainstorming_ideas
+from chapter import generate_story_chapter
+from character import generate_character_profile
+from outline import generate_plot_outline
+from quick_edit import perform_quick_edit
+from rewrite import get_rewritten_text
+
+import uvicorn
+import json  # Necessary for imageGen and tts
+
+app = FastAPI(
+    title="AI Storytelling API",
+    description="A collection of APIs for generating and manipulating story content.",
+    version="1.0.0",
+)
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=False,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
 
 import uvicorn
 import json  # Necessary for imageGen and tts
@@ -72,14 +105,18 @@ class RewriteRequest(BaseModel):
 # TTS Endpoint
 @app.post("/tts/", tags=["Text-to-Speech"])
 async def text_to_speech(request: StoryRequest):
-    """Converts story text to speech."""
+    """Converts story text to speech and returns audio as base64 string."""
     try:
-        json_input = request.json()  # Access the raw JSON string
-        play_story_from_json(json_input)
-        return {"status": "success", "message": "Story is now playing."}
+        # Get the story text from the request
+        story_text = request.story
+        
+        # Get the base64 audio from the story
+        get_audio_base64_from_story(story_text)
+        
+        # Return the base64 audio as JSON
+        # return response
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
-
 
 # Image Generation Endpoint
 @app.post("/imageGen/", tags=["Image Generation"])
